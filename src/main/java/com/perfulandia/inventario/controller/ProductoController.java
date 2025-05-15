@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+/*Controller se maneja el CRUD, esta con respuestas http */
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
@@ -22,6 +22,19 @@ public class ProductoController {
   public ResponseEntity<List<Producto>> listarProductos() {
     List<Producto> productos = productoService.listar();
     return ResponseEntity.ok(productos);
+}
+  @PutMapping("/{id}")
+public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid @RequestBody Producto productoActualizado) {
+    Producto existente = productoService.buscarPorId(id);
+    if (existente != null) {
+        existente.setNombre(productoActualizado.getNombre());
+        existente.setPrecio(productoActualizado.getPrecio());
+        existente.setStock(productoActualizado.getStock());
+        Producto actualizado = productoService.guardar(existente);
+        return ResponseEntity.ok(actualizado);
+    } else {
+        return ResponseEntity.notFound().build();
+    }
 }
   
   @GetMapping("/{id}")
