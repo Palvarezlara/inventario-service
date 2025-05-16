@@ -15,3 +15,6 @@ INSERT INTO producto (nombre, stock, precio) VALUES ('Perfume de Noche', 2, 2499
 INSERT INTO producto (nombre, stock, precio) VALUES ('Perfume de Día', 9, 18990.0);
 INSERT INTO producto (nombre, stock, precio) VALUES ('Perfume de Verano', 11, 20990.0);
 INSERT INTO producto (nombre, stock, precio) VALUES ('Perfume de Invierno', 1, 26990.0);
+
+
+

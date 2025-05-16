@@ -69,6 +69,10 @@
   			<version>21.5.0.0</version>
 		</dependency>
 		<dependency>
+    		<groupId>org.hibernate.validator</groupId>
+    		<artifactId>hibernate-validator</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
