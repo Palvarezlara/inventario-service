@@ -80,7 +80,7 @@ public class ProductoController {
 }
  
 /*EndPoint para reponer unidades al inventario */
-  @PatchMapping("/{id}/reponer")
+  @PatchMapping("/reponer/{id}")
   public ResponseEntity<String> reponerStock(
         @PathVariable Long id,
         @RequestParam int cantidad) {

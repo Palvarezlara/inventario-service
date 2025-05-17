@@ -77,7 +77,7 @@ public class ResenaController {
     //---------LOGICA DE NEGOCIO----------------
 
     // 🔹 Obtener promedio de calificación de un producto
-    @GetMapping("/producto/{idProducto}/promedio")
+    @GetMapping("/producto/promedio/{idProducto}")
     public ResponseEntity<Double> obtenerPromedioCalificacion(@PathVariable Long idProducto) {
         Double promedio = resenaService.obtenerPromedioCalificacion(idProducto);
         return ResponseEntity.ok(promedio != null ? promedio : 0.0);
