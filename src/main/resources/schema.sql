@@ -1,0 +1,18 @@
+DROP TABLE IF EXISTS resena;
+DROP TABLE IF EXISTS producto;
+
+CREATE TABLE producto (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(255) NOT NULL,
+  stock INT NOT NULL,
+  precio DOUBLE NOT NULL
+);
+
+CREATE TABLE resena (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  comentario VARCHAR(255) NOT NULL,
+  calificacion INT NOT NULL,
+  id_producto BIGINT NOT NULL,
+  id_usuario BIGINT NOT NULL,
+  nombre_usuario VARCHAR(255) NOT NULL
+);

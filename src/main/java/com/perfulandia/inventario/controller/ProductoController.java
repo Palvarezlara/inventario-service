@@ -25,7 +25,7 @@ public class ProductoController {
     return ResponseEntity.ok(productos);
 }
   @PutMapping("/{id}")
-public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid @RequestBody Producto productoActualizado) {
+  public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid @RequestBody Producto productoActualizado) {
     Producto existente = productoService.buscarPorId(id);
     if (existente != null) {
         existente.setNombre(productoActualizado.getNombre());
@@ -93,7 +93,7 @@ public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid
     }
 }
 
-/* EndPoint para buscar por nombre de producto*/
+  /*EndPoint para buscar por nombre de producto*/
   @GetMapping("/buscar")
   public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
     List<Producto> productos = productoService.buscarPorNombre(nombre);
@@ -103,17 +103,48 @@ public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid
         return ResponseEntity.ok(productos);
     }
 }
+  
   /*Endpoint para stock bajo */
   @GetMapping("/stock/bajo/{cantidad}")
   public ResponseEntity<List<Producto>> obtenerProductosConStockBajo(@PathVariable int cantidad) {
     List<Producto> productos = productoService.listarStockBajo(cantidad);
     return ResponseEntity.ok(productos);
 }
+  
   /*EndPoint para mostrar productos cuyo precio sea menor a cierta cantidad */
   @GetMapping("/precio/menor/{precio}")
   public ResponseEntity<List<Producto>> obtenerProductosPorPrecioMenor(@PathVariable double precio) {
     List<Producto> productos = productoService.listarPorPrecioMenorA(precio);
     return ResponseEntity.ok(productos);
+}
+  
+ /*EndPoint que devuelve los productos sin STOCK */
+  @GetMapping("/sin-stock")
+  public ResponseEntity<List<Producto>> obtenerProductosSinStock() {
+    List<Producto> productosSinStock = productoService.listarStockBajo(1);
+    return ResponseEntity.ok(productosSinStock);
+  }
+  
+  /*EndPoint que devuelve los productos con stock */
+  @GetMapping("/con-stock")
+  public ResponseEntity<List<Producto>> obtenerProductosConStock() {
+    List<Producto> productosConStock = productoService.listarConStock();
+    return ResponseEntity.ok(productosConStock);
+}
+
+/*---------Endpoint Reportes----------- */
+
+  /*Este endpoint devuelve el stock total de todos los productos en la base de datos. */
+  @GetMapping("/stock/total")
+  public ResponseEntity<Integer> obtenerStockTotal() {
+    Integer total = productoService.obtenerStockTotal();
+    return ResponseEntity.ok(total != null ? total : 0);
+}
+
+  /*Este endpoint devuelve un resumen del inventario, incluyendo el stock total y la cantidad de productos. */
+  @GetMapping("/reporte/resumen")
+  public ResponseEntity<Map<String, Object>> obtenerResumen() {
+    return ResponseEntity.ok(productoService.obtenerResumenInventario());
 }
 
 
