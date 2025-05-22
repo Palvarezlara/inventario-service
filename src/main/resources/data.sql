@@ -18,7 +18,7 @@ INSERT INTO producto (nombre, stock, precio) VALUES ('Perfume de Invierno', 1, 2
 
 
 INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_usuario)
-VALUES ('Muy buen aroma', 5, 1, 101, 'Ana López');
+VALUES ('Muy buen aroma', 5, 1, 101, 'Ana Lopez');
 
 INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_usuario)
 VALUES ('Me encanto', 4, 1, 102, 'Luis Garcia');

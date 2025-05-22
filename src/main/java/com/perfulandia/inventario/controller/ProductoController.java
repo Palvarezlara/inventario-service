@@ -2,14 +2,12 @@ package com.perfulandia.inventario.controller;
 
 import java.util.List;
 import java.util.Map;
-
-import com.perfulandia.inventario.model.Producto;
-import com.perfulandia.inventario.service.ProductoService;
-
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.perfulandia.inventario.model.Producto;
+import com.perfulandia.inventario.service.ProductoService;
+import jakarta.validation.Valid;
 
 /*Controller se maneja el CRUD, esta con respuestas http */
 @RestController
@@ -43,7 +41,7 @@ public class ProductoController {
     if (producto != null) {
         return ResponseEntity.ok(producto);
     } else {
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.notFound().build();//404
     }
 }
   @PostMapping
@@ -52,13 +50,13 @@ public class ProductoController {
     return ResponseEntity.ok(guardado);
 }
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
+  public ResponseEntity<Map<String,String>> eliminarProducto(@PathVariable Long id) {
     Producto producto = productoService.buscarPorId(id);
     if (producto != null) {
         productoService.eliminar(id);
-        return ResponseEntity.noContent().build(); // 204 sin contenido
+        return ResponseEntity.ok(Map.of("mensaje","1producto aliminado correctamente")); // 204 sin contenido
     } else {
-        return ResponseEntity.notFound().build(); // 404
+        return ResponseEntity.status(404).body(Map.of("error","Producto no encontrado")); // 404
     }
 }
 

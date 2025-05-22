@@ -1,0 +1,20 @@
+[
+{
+    "Ejemplo": "Para usar en postman"
+},
+{
+    
+    "nombre": "Perfume Floral",
+    "stock": 10,
+    "precio": 19990
+  },
+  {
+    
+    "comentario": "Me encanto",
+    "calificacion": 4,
+    "idProducto": 1,
+    "idUsuario": 102,
+    "nombreUsuario": "Luis Garcia"
+  }
+ 
+]

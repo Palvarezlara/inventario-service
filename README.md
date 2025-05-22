@@ -31,7 +31,7 @@ inventario/
 
 ---
 
-## 🌐 Endpoints
+## 🌐 Endpoints 
 
 ### 🔹 CRUD Productos (`/api/productos`)
 | Método | Endpoint                     | Descripción                          |
@@ -100,6 +100,7 @@ inventario/
 Importa los siguientes endpoints y prueba el CRUD y reportes:
 - http://localhost:8080/api/productos
 - http://localhost:8080/api/resenas
+- Se adjunta archivo Json para facilitar pruebas en Postman (`src\main\resources\prodResena.json`)
 
 ---
 
