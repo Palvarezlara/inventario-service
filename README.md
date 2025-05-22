@@ -24,34 +24,32 @@ inventario/
 ├── repository/        # Interfaces para acceso a datos
 ├── model/             # Entidades JPA
 └── resources/
-    ├── application-local.properties
+    ├── application.properties
     └── data.sql       # Datos de carga inicial
-    └── schema.sql     # Creación de tablas (Momentaneo para el desarrollo)
-```
 
 ---
 
 ## 🌐 Endpoints 
 
 ### 🔹 CRUD Productos (`/api/productos`)
-| Método | Endpoint                     | Descripción                          |
-|--------|------------------------------|--------------------------------------|
-| GET    | `/`                          | Lista todos los productos            |
-| GET    | `/{id}`                      | Obtiene un producto por ID           |
-| POST   | `/`                          | Crea un nuevo producto               |
-| PUT    | `/{id}`                      | Actualiza un producto existente      |
-| DELETE | `/{id}`                      | Elimina un producto por ID           |
+| Método | Endpoint                     | Descripción                          |                                             |
+|--------|------------------------------|--------------------------------------|---------------------------------------------|
+| GET    | `/`                          | Lista todos los productos            |                                             |
+| GET    | `/{id}`                      | Obtiene un producto por ID           |                                             |
+| POST   | `/`                          | Crea un nuevo producto               |{"nombre": "nombre","stock": ?,"precio": ? } |
+| PUT    | `/{id}`                      | Actualiza un producto existente      |{"nombre": "nombre","stock": ?,"precio": ? } |
+| DELETE | `/{id}`                      | Elimina un producto por ID           |                                             |
 
 ### 🔹 Lógica de negocio Productos
-| Método | Endpoint                     | Descripción                                        |
-|--------|------------------------------|----------------------------------------------------|
-| PATCH  | `/rebajarStock/{id}`         | Rebaja stock si hay cantidad suficiente            |
-| PATCH  | `/reponer/{id}`              | Reponer stock de un producto                       |
-| GET    | `/buscar?nombre=`            | Buscar producto por nombre (parcial o total)       |
-| GET    | `/precio/menor/{precio}`     | Lista productos cuyo precio es menor al indicado   |
-| GET    | `/stock/bajo/{cantidad}`     | Lista productos con stock menor o igual al número  |
-| GET    | `/sin-stock`                 | Lista productos sin stock                          |
-| GET    | `/con-stock`                 | Lista productos con stock disponible               |
+| Método | Endpoint                     | Descripción                                        |              POSTMAN                 |
+|--------|------------------------------|----------------------------------------------------|--------------------------------------|
+| PATCH  | `/rebajarStock/{id}`         | Rebaja stock si hay cantidad suficiente            | { "cantidad": ?  }                   |
+| PATCH  | `/reponer/{id}`              | Reponer stock de un producto                       | parametro = `reponer/{id}?cantidad=?`|
+| GET    | `/buscar?nombre=`            | Buscar producto por nombre (parcial o total)       |                                      |
+| GET    | `/precio/menor/{precio}`     | Lista productos cuyo precio es menor al indicado   |                                      |
+| GET    | `/stock/bajo/{cantidad}`     | Lista productos con stock menor o igual al número  |                                      |
+| GET    | `/sin-stock`                 | Lista productos sin stock                          |                                      |
+| GET    | `/con-stock`                 | Lista productos con stock disponible               |                                      |
 
 ### 📊 Reportes de Inventario
 | Método | Endpoint                     | Descripción                                     |
@@ -61,15 +59,15 @@ inventario/
 ---
 
 ### ✨ Reseñas (`/api/resenas`)
-| Método | Endpoint                     | Descripción                                |
-|--------|------------------------------|--------------------------------------------|
-| GET    | `/`                          | Lista todas las reseñas                    |
-| GET    | `/{id}`                      | Obtiene una reseña por ID                  |
-| GET    | `/producto/{idProducto}`     | Reseñas por ID de producto                 |
-| GET    | `/usuario/{idUsuario}`       | Reseñas por ID de usuario                  |
-| POST   | `/`                          | Crea una reseña                            |
-| PUT    | `/{id}`                      | Actualiza una reseña por ID                |
-| DELETE | `/{id}`                      | Elimina una reseña por ID                  |
+| Método | Endpoint                     | Descripción                                |                           BODY POSTMAN                                               |
+|--------|------------------------------|--------------------------------------------|--------------------------------------------------------------------------------------|
+| GET    | `/`                          | Lista todas las reseñas                    |                                                                                      |
+| GET    | `/{id}`                      | Obtiene una reseña por ID                  |                                                                                      |
+| GET    | `/producto/{idProducto}`     | Reseñas por ID de producto                 |                                                                                      |
+| GET    | `/usuario/{idUsuario}`       | Reseñas por ID de usuario                  |                                                                                      |
+| POST   | `/`                          | Crea una reseña                            |{"comentario": "huele delicioso", "calificacion": ?,"idProducto": ?,"idUsuario": ?,   |
+| PUT    | `/{id}`                      | Actualiza una reseña por ID                | "nombreUsuario":"Esto es un nombre"}                                                 |
+| DELETE | `/{id}`                      | Elimina una reseña por ID                  |                                                                                      |
 
 ### 📊 Reportes de Reseñas
 | Método | Endpoint                              | Descripción                                 |

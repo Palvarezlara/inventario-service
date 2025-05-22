@@ -63,7 +63,7 @@ public class ProductoController {
 //------------------EndPoint de la Logica de negocio------------------------//
 
 /*EndPoint  para descontar del inventario */
-  @PatchMapping("/rebajarStock/{id}")
+  @PatchMapping("/rebajarStock/{id}") 
   public ResponseEntity<?> rebajarStock(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
     try {
         int cantidad = body.get("cantidad");
