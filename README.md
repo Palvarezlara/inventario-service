@@ -3,6 +3,7 @@
 
 Este proyecto es un microservicio desarrollado en Spring Boot para gestionar el inventario y reseñas de productos de la tienda Perfulandia SPA.
 Incluye operaciones CRUD, lógica de negocio como rebaja y reposición de stock, reportes, y gestión de reseñas.
+
 ---
 
 ## 🚀 Tecnologías utilizadas
