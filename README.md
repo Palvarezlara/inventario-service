@@ -41,7 +41,7 @@ inventario/
 ## 🌐 Endpoints 
 
 ### 🔹 CRUD Productos (`http://localhost:8080/api/productos`)
-| Método | Endpoint                     | Descripción                          |                                             |
+| Método | Endpoint                     | Descripción                          | Body Postman                                |
 |--------|------------------------------|--------------------------------------|---------------------------------------------|
 | GET    | `/api/productos`             | Lista todos los productos            |                                             |
 | GET    | `/api/productos/{id}`        | Obtiene un producto por ID           |                                             |
@@ -50,7 +50,7 @@ inventario/
 | DELETE | `/api/productos/{id}`        | Elimina un producto por ID           |                                             |
 
 ### 🔹 Lógica de negocio Productos (`/api/productos`)
-| Método | Endpoint                     | Descripción                                        |              POSTMAN                 |
+| Método | Endpoint                     | Descripción                                        | Postman                              |
 |--------|------------------------------|----------------------------------------------------|--------------------------------------|
 | PATCH  | `/rebajarStock/{id}`         | Rebaja stock si hay cantidad suficiente            | Body:{ "cantidad": ?  }              |
 | PATCH  | `/reponer/{id}?cantidad=xx`  | Reponer stock de un producto                       | parametro: `reponer/{id}?cantidad=xx`|
@@ -68,7 +68,7 @@ inventario/
 ---
 
 ### ✨ Reseñas (`http://localhost:8080/api/resenas`)
-| Método | Endpoint                     | Descripción                 |                      POSTMAN                                       |
+| Método | Endpoint                     | Descripción                 | Body Postman                                                       |
 |--------|------------------------------|-----------------------------|--------------------------------------------------------------------|
 | GET    | `/api/resenas`               | Lista todas las reseñas     |                                                                    |
 | GET    | `/api/resenas/{id}`          | Obtiene una reseña por ID   |                                                                    |
