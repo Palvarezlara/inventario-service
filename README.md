@@ -35,7 +35,7 @@ inventario/
 └── resources/
     ├── application.properties
     └── data.sql       # Datos de carga inicial
-
+```
 ---
 
 ## 🌐 Endpoints 
