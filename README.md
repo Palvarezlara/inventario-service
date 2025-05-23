@@ -1,8 +1,8 @@
 
 # 📦 Microservicio de Inventario y Reseñas - Perfulandia SPA
 
-Este microservicio gestiona el inventario de productos, permite registrar reseñas de clientes y proporciona reportes útiles para la administración.
-
+Este proyecto es un microservicio desarrollado en Spring Boot para gestionar el inventario y reseñas de productos de la tienda Perfulandia SPA.
+Incluye operaciones CRUD, lógica de negocio como rebaja y reposición de stock, reportes, y gestión de reseñas.
 ---
 
 ## 🚀 Tecnologías utilizadas
@@ -10,9 +10,10 @@ Este microservicio gestiona el inventario de productos, permite registrar reseñ
 - Java 17
 - Spring Boot 3.4.5
 - Maven
+- Spring Data JPA
 - MySQL (base de datos local)
-- JPA/Hibernate
-
+- Postman
+- Git
 ---
 
 ## 📁 Estructura de Carpetas
@@ -20,9 +21,17 @@ Este microservicio gestiona el inventario de productos, permite registrar reseñ
 ```
 inventario/
 ├── controller/        # Controladores REST
+|   ├── ProductoController.java
+|   └── ReservaController.java
 ├── service/           # Lógica de negocio
+|   ├── ProductoService.java
+|   └── ReservaService.java
 ├── repository/        # Interfaces para acceso a datos
+|   ├── ProductoRepository.java
+|   └── ReservaRepository.java
 ├── model/             # Entidades JPA
+|   ├── Producto.java
+|   └── Reserva.java
 └── resources/
     ├── application.properties
     └── data.sql       # Datos de carga inicial
@@ -31,21 +40,21 @@ inventario/
 
 ## 🌐 Endpoints 
 
-### 🔹 CRUD Productos (`/api/productos`)
+### 🔹 CRUD Productos (`http://localhost:8080/api/productos`)
 | Método | Endpoint                     | Descripción                          |                                             |
 |--------|------------------------------|--------------------------------------|---------------------------------------------|
-| GET    | `/`                          | Lista todos los productos            |                                             |
-| GET    | `/{id}`                      | Obtiene un producto por ID           |                                             |
-| POST   | `/`                          | Crea un nuevo producto               |{"nombre": "nombre","stock": ?,"precio": ? } |
-| PUT    | `/{id}`                      | Actualiza un producto existente      |{"nombre": "nombre","stock": ?,"precio": ? } |
-| DELETE | `/{id}`                      | Elimina un producto por ID           |                                             |
+| GET    | `/api/productos`             | Lista todos los productos            |                                             |
+| GET    | `/api/productos/{id}`        | Obtiene un producto por ID           |                                             |
+| POST   | `/api/productos`             | Crea un nuevo producto               |{"nombre": "nombre","stock": ?,"precio": ? } |
+| PUT    | `/api/productos/{id}`        | Actualiza un producto existente      |{"nombre": "nombre","stock": ?,"precio": ? } |
+| DELETE | `/api/productos/{id}`        | Elimina un producto por ID           |                                             |
 
-### 🔹 Lógica de negocio Productos
+### 🔹 Lógica de negocio Productos (`/api/productos`)
 | Método | Endpoint                     | Descripción                                        |              POSTMAN                 |
 |--------|------------------------------|----------------------------------------------------|--------------------------------------|
-| PATCH  | `/rebajarStock/{id}`         | Rebaja stock si hay cantidad suficiente            | { "cantidad": ?  }                   |
-| PATCH  | `/reponer/{id}`              | Reponer stock de un producto                       | parametro = `reponer/{id}?cantidad=?`|
-| GET    | `/buscar?nombre=`            | Buscar producto por nombre (parcial o total)       |                                      |
+| PATCH  | `/rebajarStock/{id}`         | Rebaja stock si hay cantidad suficiente            | Body:{ "cantidad": ?  }              |
+| PATCH  | `/reponer/{id}?cantidad=xx`  | Reponer stock de un producto                       | parametro: `reponer/{id}?cantidad=xx`|
+| GET    | `/buscar?nombre=xyz`         | Buscar producto por nombre (parcial o total)       |                                      |
 | GET    | `/precio/menor/{precio}`     | Lista productos cuyo precio es menor al indicado   |                                      |
 | GET    | `/stock/bajo/{cantidad}`     | Lista productos con stock menor o igual al número  |                                      |
 | GET    | `/sin-stock`                 | Lista productos sin stock                          |                                      |
@@ -58,23 +67,22 @@ inventario/
 | GET    | `/stock/total`               | Devuelve la suma de stock de todos los productos|
 ---
 
-### ✨ Reseñas (`/api/resenas`)
-| Método | Endpoint                     | Descripción                                |                           BODY POSTMAN                                               |
-|--------|------------------------------|--------------------------------------------|--------------------------------------------------------------------------------------|
-| GET    | `/`                          | Lista todas las reseñas                    |                                                                                      |
-| GET    | `/{id}`                      | Obtiene una reseña por ID                  |                                                                                      |
-| GET    | `/producto/{idProducto}`     | Reseñas por ID de producto                 |                                                                                      |
-| GET    | `/usuario/{idUsuario}`       | Reseñas por ID de usuario                  |                                                                                      |
-| POST   | `/`                          | Crea una reseña                            |{"comentario": "huele delicioso", "calificacion": ?,"idProducto": ?,"idUsuario": ?,   |
-| PUT    | `/{id}`                      | Actualiza una reseña por ID                | "nombreUsuario":"Esto es un nombre"}                                                 |
-| DELETE | `/{id}`                      | Elimina una reseña por ID                  |                                                                                      |
+### ✨ Reseñas (`http://localhost:8080/api/resenas`)
+| Método | Endpoint                     | Descripción                 |                      POSTMAN                                       |
+|--------|------------------------------|-----------------------------|--------------------------------------------------------------------|
+| GET    | `/api/resenas`               | Lista todas las reseñas     |                                                                    |
+| GET    | `/api/resenas/{id}`          | Obtiene una reseña por ID   |                                                                    |
+| GET    | `/producto/{idProducto}`     | Reseñas por ID de producto  |                                                                    |
+| GET    | `/usuario/{idUsuario}`       | Reseñas por ID de usuario   |                                                                    |
+| POST   | `/api/resenas`               | Crea una reseña             |{"comentario": "huele delicioso", "calificacion": ?,"idProducto": ?,|
+| PUT    | `/api/resenas/{id}`          | Actualiza una reseña por ID | idUsuario": ?,"nombreUsuario":"Esto es un nombre"}                 |
+| DELETE | `/api/resenas/{id}`          | Elimina una reseña por ID   |                                                                    |
 
-### 📊 Reportes de Reseñas
+### 📊 Reportes de Reseñas (`/api/resenas`)
 | Método | Endpoint                              | Descripción                                 |
 |--------|---------------------------------------|---------------------------------------------|
 | GET    | `/producto/promedio/{idProducto}`     | Promedio de calificación de un producto     |
 | GET    | `/reporte/cantidad-por-producto`      | Cantidad total de reseñas por producto      |
-
 ---
 
 ## ⚠️ Validaciones implementadas
@@ -87,9 +95,13 @@ inventario/
 
 ## 🔐 Consideraciones futuras
 
-- Seguridad 
+- Seguridad (autenticación/roles)
 - Persistencia en la nube (MySQL en AWS)
 - Dockers para desplegar el microservicio
+- CI/CD (no aplica para esta entrega)
+- Validaciones más robustas por campos (solo se aplicaron básicas)
+- Interacción real entre microservicios (ej. carrito de compras)
+- Pruebas
 
 ---
 
@@ -103,5 +115,6 @@ Importa los siguientes endpoints y prueba el CRUD y reportes:
 ---
 
 ## 📌 Autora
-Pamela Alvarez – Duoc UC – Ingeniería en Informática – 2025
+Pamela Alvarez – Desarrollo Fullstack 1
+Duoc UC – Ingeniería en Informática – 2025
 
