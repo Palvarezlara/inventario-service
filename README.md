@@ -115,6 +115,6 @@ Importa los siguientes endpoints y prueba el CRUD y reportes:
 ---
 
 ## 📌 Autora
-Pamela Alvarez – Desarrollo Fullstack 1
+Pamela Alvarez – Desarrollo Fullstack 1 -
 Duoc UC – Ingeniería en Informática – 2025
 
