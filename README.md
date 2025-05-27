@@ -23,16 +23,16 @@ Incluye operaciones CRUD, lógica de negocio como rebaja y reposición de stock,
 inventario/
 ├── controller/        # Controladores REST
 |   ├── ProductoController.java
-|   └── ReservaController.java
+|   └── ResenaController.java
 ├── service/           # Lógica de negocio
 |   ├── ProductoService.java
-|   └── ReservaService.java
+|   └── ResenaService.java
 ├── repository/        # Interfaces para acceso a datos
 |   ├── ProductoRepository.java
-|   └── ReservaRepository.java
+|   └── ResenaRepository.java
 ├── model/             # Entidades JPA
 |   ├── Producto.java
-|   └── Reserva.java
+|   └── Resena.java
 └── resources/
     ├── application.properties
     └── data.sql       # Datos de carga inicial
