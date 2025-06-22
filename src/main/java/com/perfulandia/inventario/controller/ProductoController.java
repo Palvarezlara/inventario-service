@@ -5,67 +5,125 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.perfulandia.inventario.model.Producto;
 import com.perfulandia.inventario.service.ProductoService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 
 /*Controller se maneja el CRUD, esta con respuestas http */
 @RestController
 @RequestMapping("/api/v2/productos")
+@Tag(name = "Producto", description = "Operaciones relacionadas con productos del inventario")
 public class ProductoController {
-
+  
   @Autowired
   private ProductoService productoService;
+  
 //----------------------------EndPoint CRUD----------------------------//
   @GetMapping("/all")
+  @Operation(summary = "Listar todos los productos")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Lista de productos obtenida correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "500", description = "Error interno del servidor al obtener la lista de productos")
+  })
   public ResponseEntity<List<Producto>> listarProductos() {
     List<Producto> productos = productoService.listar();
     return ResponseEntity.ok(productos); // 200 OK
 }
 
   @PostMapping("/crear")
+  @Operation(summary = "Crear un nuevo producto",
+    requestBody = @RequestBody(
+        description = "Objeto Producto a crear",
+        required = true,
+        content = @Content(schema = @Schema(implementation = Producto.class))
+    )
+  )
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "201", description = "Producto creado correctamente",
+      content = @Content(mediaType = "application/json", 
+                          schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta, datos inválidos")
+  })
   public ResponseEntity<Producto> guardarProducto(@Valid @RequestBody Producto producto) {
     Producto guardado = productoService.guardar(producto);
     return ResponseEntity.status(201).body(guardado); // 201 Created
 }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @Valid @RequestBody Producto productoActualizado) {
-    Producto existente = productoService.buscarPorId(id);
-    if (existente != null) {
-        existente.setNombre(productoActualizado.getNombre());
-        existente.setPrecio(productoActualizado.getPrecio());
-        existente.setStock(productoActualizado.getStock());
-        Producto actualizado = productoService.guardar(existente);
-        return ResponseEntity.ok(actualizado); // 200 OK
-    } else {
-        return ResponseEntity.notFound().build(); //404 Not Found
+  @Operation(summary = "Actualizar un producto existente",
+    requestBody = @RequestBody(
+        description = "Datos actualizados del producto",
+        required = true,
+        content = @Content(schema = @Schema(implementation = Producto.class))
+    )
+  )
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente",
+      content = @Content(mediaType = "application/json", 
+                          schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
+  })
+  public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, 
+    @RequestBody @Valid Producto productoActualizado) {
+    try {
+        Producto existente = productoService.buscarPorId(id);
+        if (existente != null) {
+            existente.setNombre(productoActualizado.getNombre());
+            existente.setPrecio(productoActualizado.getPrecio());
+            existente.setStock(productoActualizado.getStock());
+            Producto actualizado = productoService.guardar(existente);
+            return ResponseEntity.ok(actualizado); // 200 OK
+        } else {
+            return ResponseEntity.notFound().build(); //404 Not Found
+        }
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().build(); // 400 Bad Request
     }
 }
 
   @GetMapping("/{id}")
+  @Operation(summary = "Obtener un producto por ID")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Producto encontrado",
+      content = @Content(mediaType = "application/json", 
+                          schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+    @ApiResponse(responseCode = "400", description = "Error en la solicitud")
+  })
   public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable Long id) {
-    Producto producto = productoService.buscarPorId(id);
-    if (producto != null) {
-        return ResponseEntity.ok(producto); // 200 OK
-    } else {
-        return ResponseEntity.notFound().build();//404
+    try {
+        Producto producto = productoService.buscarPorId(id);
+        if (producto != null) {
+            return ResponseEntity.ok(producto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().build(); // en vez de 500
     }
 }
   
   @DeleteMapping("/eliminar/{id}")
+  @Operation(summary = "Eliminar un producto por ID")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "204", description = "Producto eliminado correctamente"),
+    @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+  })
   public ResponseEntity<?> eliminarProducto(@PathVariable Long id) {
     Producto producto = productoService.buscarPorId(id);
     if (producto != null) {
@@ -80,7 +138,24 @@ public class ProductoController {
 
 /*EndPoint  para descontar del inventario */
   @PatchMapping("/rebajarStock/{id}") 
-  public ResponseEntity<?> rebajarStock(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+  @Operation(
+    summary = "Rebajar stock de un producto",
+    requestBody = @RequestBody(
+        description = "JSON con la cantidad a rebajar (ejemplo: { \"cantidad\": 3 })",
+        required = true,
+        content = @Content(
+            schema = @Schema(
+                example = "{\"cantidad\": 5}"))
+     )
+  )
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Stock actualizado correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
+  })
+  public ResponseEntity<?> rebajarStock(@PathVariable Long id,
+         @RequestBody Map<String, Integer> body) {
     try {
         int cantidad = body.get("cantidad");
         Producto actualizado = productoService.rebajarStock(id, cantidad);
@@ -95,8 +170,17 @@ public class ProductoController {
  
 /*EndPoint para reponer unidades al inventario */
   @PatchMapping("/reponer/{id}")
+  @Operation(summary = "Reponer stock de un producto")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Stock repuesto correctamente"),
+    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
+  })
   public ResponseEntity<String> reponerStock(
+        @Parameter(description = "ID del producto a reponer", required = true)
         @PathVariable Long id,
+        @Parameter(description = "Cantidad a reponer", required = true, content= @Content(
+            examples = @ExampleObject(value = "5")
+        ))
         @RequestParam int cantidad) {
 
     try {
@@ -109,17 +193,33 @@ public class ProductoController {
 
   /*EndPoint para buscar por nombre de producto*/
   @GetMapping("/buscar")
+  @Operation(summary = "Buscar productos por nombre", parameters = {
+    @Parameter(name = "nombre", description = "Nombre, o parte de este, del producto a buscar", required = true)
+  })
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Productos encontrados"),
+    @ApiResponse(responseCode = "404", description = "No se encontraron productos con ese nombre")
+  })
   public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
-    List<Producto> productos = productoService.buscarPorNombre(nombre);
-    if (productos.isEmpty()) {
-        return ResponseEntity.notFound().build(); // 404 Not Found
-    } else {
-        return ResponseEntity.ok(productos); // 200 OK
+    try  {
+      List<Producto> productos = productoService.buscarPorNombre(nombre);
+      if (productos.isEmpty()) {
+          return ResponseEntity.notFound().build(); // 404 Not Found
+      } else {
+          return ResponseEntity.ok(productos); // 200 OK
+      }
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(null); // 400 Bad Request
     }
 }
   
   /*Endpoint para stock bajo */
   @GetMapping("/stock/bajo/{cantidad}")
+  @Operation(summary = "Listar productos con stock bajo")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Productos con stock bajo obtenidos correctamente"),
+    @ApiResponse(responseCode = "404", description = "No se encontraron productos con stock bajo")
+  })
   public ResponseEntity<List<Producto>> obtenerProductosConStockBajo(@PathVariable int cantidad) {
     List<Producto> productos = productoService.listarStockBajo(cantidad);
     return ResponseEntity.ok(productos); // 200 OK
@@ -127,13 +227,29 @@ public class ProductoController {
   
   /*EndPoint para mostrar productos cuyo precio sea menor a cierta cantidad */
   @GetMapping("/precio/menor/{precio}")
+  @Operation(summary = "Listar productos con precio menor a")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Productos con precio menor a obtenidos correctamente"),
+    @ApiResponse(responseCode = "404", description = "No se encontraron productos con precio menor a")
+  })
   public ResponseEntity<List<Producto>> obtenerProductosPorPrecioMenor(@PathVariable double precio) {
-    List<Producto> productos = productoService.listarPorPrecioMenorA(precio);
-    return ResponseEntity.ok(productos); // 200 OK
+    try {
+      List<Producto> productos = productoService.listarPorPrecioMenorA(precio);
+      return ResponseEntity.ok(productos); // 200 OK
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body(null); // 400 Bad Request
+    }
 }
   
  /*EndPoint que devuelve los productos sin STOCK */
   @GetMapping("/sin-stock")
+  @Operation(summary = "Listar productos sin stock")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Productos sin stock obtenidos correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "404", description = "No se encontraron productos sin stock")
+  })
   public ResponseEntity<List<Producto>> obtenerProductosSinStock() {
     List<Producto> productosSinStock = productoService.listarStockBajo(1);
     return ResponseEntity.ok(productosSinStock); // 200 OK
@@ -141,6 +257,13 @@ public class ProductoController {
   
   /*EndPoint que devuelve los productos con stock */
   @GetMapping("/con-stock")
+  @Operation(summary = "Listar productos con stock")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Productos con stock obtenidos correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = Producto.class))),
+    @ApiResponse(responseCode = "404", description = "No se encontraron productos con stock")
+  })
   public ResponseEntity<List<Producto>> obtenerProductosConStock() {
     List<Producto> productosConStock = productoService.listarConStock();
     return ResponseEntity.ok(productosConStock); // 200 OK
@@ -150,15 +273,48 @@ public class ProductoController {
 
   /*Este endpoint devuelve el stock total de todos los productos en la base de datos. */
   @GetMapping("/stock/total")
+  @Operation(summary = "Obtener stock total de productos")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Stock total obtenido correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(type = "integer", example = "100"))),
+    @ApiResponse(responseCode = "204", description = "No hay productos disponibles"),
+    @ApiResponse(responseCode = "400", description = "Error al obtener el stock total")
+  })
   public ResponseEntity<Integer> obtenerStockTotal() {
-    Integer total = productoService.obtenerStockTotal();
-    return ResponseEntity.ok(total != null ? total : 0); // 200 OK
+    try {
+        Integer total = productoService.obtenerStockTotal();
+        if (total == null || total == 0) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+        return ResponseEntity.ok(total); // 200 OK
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(0); // 400 Bad Request con valor 0
+    }
 }
 
   /*Este endpoint devuelve un resumen del inventario, incluyendo el stock total y la cantidad de productos. */
   @GetMapping("/reporte/resumen")
+  @Operation(summary = "Obtener resumen del inventario")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "Resumen del inventario obtenido correctamente",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = Map.class))),
+    @ApiResponse(responseCode = "204", description = "No hay productos para resumir"),
+    @ApiResponse(responseCode = "400", description = "Error al obtener el resumen del inventario")
+  })
   public ResponseEntity<Map<String, Object>> obtenerResumen() {
-    return ResponseEntity.ok(productoService.obtenerResumenInventario()); // 200 OK
+    try {
+        Map<String, Object> resumen = productoService.obtenerResumenInventario();
+        if (resumen == null || resumen.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+        return ResponseEntity.ok(resumen); // 200 OK
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "error", "No se pudo generar el resumen del inventario"
+        )); // 400 Bad Request con mensaje controlado
+    }
 }
 
 }
