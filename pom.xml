@@ -58,12 +58,6 @@
     		<scope>runtime</scope>
 		</dependency>
 
-		<!-- Spring HATEOAS -->
-    	<dependency>
-        	<groupId>org.springframework.boot</groupId>
-        	<artifactId>spring-boot-starter-hateoas</artifactId>
-    	</dependency>
-
 		<!-- Testing -->
     	<dependency>
         	<groupId>org.springframework.boot</groupId>
@@ -81,6 +75,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>1.18.32</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -90,6 +85,7 @@
     		<artifactId>datafaker</artifactId>
     		<version>2.3.0</version>
 		</dependency>
+
 		<!-- JUnit 5  -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -117,8 +113,15 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.6.0</version>
 		</dependency>
+
+		<!-- Spring HATEOAS -->
+    	<dependency>
+        	<groupId>org.springframework.boot</groupId>
+        	<artifactId>spring-boot-starter-hateoas</artifactId>
+    	</dependency>
+
 	</dependencies>
-	
+
 
 	<build>
 		<plugins>

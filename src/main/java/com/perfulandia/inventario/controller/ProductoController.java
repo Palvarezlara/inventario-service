@@ -3,19 +3,18 @@ package com.perfulandia.inventario.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+
+import com.perfulandia.inventario.dto.ProductoModel;
+import com.perfulandia.inventario.assemblers.ProductoModelAssembler;
 import com.perfulandia.inventario.model.Producto;
 import com.perfulandia.inventario.service.ProductoService;
 
@@ -27,7 +26,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+
 
 /*Controller se maneja el CRUD, esta con respuestas http */
 @RestController
@@ -37,6 +36,10 @@ public class ProductoController {
   
   @Autowired
   private ProductoService productoService;
+
+  @Autowired
+  private ProductoModelAssembler assembler;
+
   
 //----------------------------EndPoint CRUD----------------------------//
   @GetMapping("/all")
@@ -47,10 +50,16 @@ public class ProductoController {
         schema = @Schema(implementation = Producto.class))),
     @ApiResponse(responseCode = "400", description = "Error al obtener la lista de productos")
   })
-  public ResponseEntity<List<Producto>> listarProductos() {
+  public ResponseEntity<CollectionModel<ProductoModel>> listarProductos() {
    try {
         List<Producto> productos = productoService.listar();
-        return ResponseEntity.ok(productos); // 200 OK
+        List<ProductoModel> modelos = productos.stream()
+            .map(assembler::toModel)
+            .toList();
+        return ResponseEntity.ok(CollectionModel.of(modelos, 
+        linkTo(methodOn(ProductoController.class).listarProductos()).withSelfRel()
+        )
+      ); // 200 OK
     } catch (Exception e) {
         return ResponseEntity.badRequest().build(); // 400 Bad Request
     }
@@ -117,11 +126,11 @@ public class ProductoController {
     @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
     @ApiResponse(responseCode = "400", description = "Error en la solicitud")
   })
-  public ResponseEntity<Producto> obtenerProductoPorId(@PathVariable Long id) {
+  public ResponseEntity<ProductoModel> obtenerProductoPorId(@PathVariable Long id) {
     try {
         Producto producto = productoService.buscarPorId(id);
         if (producto != null) {
-            return ResponseEntity.ok(producto);
+            return ResponseEntity.ok(assembler.toModel(producto));
         } else {
             return ResponseEntity.notFound().build();
         }
