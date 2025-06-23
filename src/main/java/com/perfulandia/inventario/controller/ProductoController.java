@@ -5,20 +5,28 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.perfulandia.inventario.model.Producto;
 import com.perfulandia.inventario.service.ProductoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import jakarta.validation.Valid;
 
 /*Controller se maneja el CRUD, esta con respuestas http */
@@ -37,16 +45,20 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Lista de productos obtenida correctamente",
       content = @Content(mediaType = "application/json",
         schema = @Schema(implementation = Producto.class))),
-    @ApiResponse(responseCode = "500", description = "Error interno del servidor al obtener la lista de productos")
+    @ApiResponse(responseCode = "400", description = "Error al obtener la lista de productos")
   })
   public ResponseEntity<List<Producto>> listarProductos() {
-    List<Producto> productos = productoService.listar();
-    return ResponseEntity.ok(productos); // 200 OK
+   try {
+        List<Producto> productos = productoService.listar();
+        return ResponseEntity.ok(productos); // 200 OK
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().build(); // 400 Bad Request
+    }
 }
 
   @PostMapping("/crear")
   @Operation(summary = "Crear un nuevo producto",
-    requestBody = @RequestBody(
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "Objeto Producto a crear",
         required = true,
         content = @Content(schema = @Schema(implementation = Producto.class))
@@ -65,7 +77,7 @@ public class ProductoController {
 
   @PutMapping("/{id}")
   @Operation(summary = "Actualizar un producto existente",
-    requestBody = @RequestBody(
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "Datos actualizados del producto",
         required = true,
         content = @Content(schema = @Schema(implementation = Producto.class))
@@ -140,7 +152,7 @@ public class ProductoController {
   @PatchMapping("/rebajarStock/{id}") 
   @Operation(
     summary = "Rebajar stock de un producto",
-    requestBody = @RequestBody(
+    requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "JSON con la cantidad a rebajar (ejemplo: { \"cantidad\": 3 })",
         required = true,
         content = @Content(
@@ -198,16 +210,13 @@ public class ProductoController {
   })
   @ApiResponses(value = {
     @ApiResponse(responseCode = "200", description = "Productos encontrados"),
-    @ApiResponse(responseCode = "404", description = "No se encontraron productos con ese nombre")
+    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
   })
   public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
     try  {
       List<Producto> productos = productoService.buscarPorNombre(nombre);
-      if (productos.isEmpty()) {
-          return ResponseEntity.notFound().build(); // 404 Not Found
-      } else {
-          return ResponseEntity.ok(productos); // 200 OK
-      }
+      return ResponseEntity.ok(productos); // 200 OK
+      
     } catch (Exception e) {
         return ResponseEntity.badRequest().body(null); // 400 Bad Request
     }
@@ -278,16 +287,12 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Stock total obtenido correctamente",
       content = @Content(mediaType = "application/json",
         schema = @Schema(type = "integer", example = "100"))),
-    @ApiResponse(responseCode = "204", description = "No hay productos disponibles"),
     @ApiResponse(responseCode = "400", description = "Error al obtener el stock total")
   })
   public ResponseEntity<Integer> obtenerStockTotal() {
     try {
         Integer total = productoService.obtenerStockTotal();
-        if (total == null || total == 0) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-        }
-        return ResponseEntity.ok(total); // 200 OK
+        return ResponseEntity.ok(total != null ? total : 0); // 200 OK
     } catch (Exception e) {
         return ResponseEntity.badRequest().body(0); // 400 Bad Request con valor 0
     }
@@ -300,21 +305,16 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Resumen del inventario obtenido correctamente",
       content = @Content(mediaType = "application/json",
         schema = @Schema(implementation = Map.class))),
-    @ApiResponse(responseCode = "204", description = "No hay productos para resumir"),
     @ApiResponse(responseCode = "400", description = "Error al obtener el resumen del inventario")
   })
   public ResponseEntity<Map<String, Object>> obtenerResumen() {
     try {
         Map<String, Object> resumen = productoService.obtenerResumenInventario();
-        if (resumen == null || resumen.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-        }
-        return ResponseEntity.ok(resumen); // 200 OK
+        return ResponseEntity.ok(resumen != null ? resumen : Map.of()); // 200 OK
     } catch (Exception e) {
         return ResponseEntity.badRequest().body(Map.of(
             "error", "No se pudo generar el resumen del inventario"
         )); // 400 Bad Request con mensaje controlado
     }
-}
-
+  }
 }

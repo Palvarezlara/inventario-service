@@ -126,7 +126,6 @@ public class ResenaControllerTest {
                 .andExpect(jsonPath("$.comentario").value("Actualizado"));
     }
 
-
     @Test
     void testListarPorUsuario() throws Exception {
         Resena r1 = new Resena();
@@ -145,6 +144,7 @@ public class ResenaControllerTest {
         Resena resenaActualizada = new Resena();
         resenaActualizada.setComentario("Comentario nuevo");
         resenaActualizada.setCalificacion(5);
+        resenaActualizada.setId(id);
 
         // Simulamos que no se encuentra la reseña
         Mockito.when(resenaService.buscarPorId(id)).thenReturn(Optional.empty());

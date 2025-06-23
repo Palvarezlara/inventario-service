@@ -59,6 +59,16 @@ class ProductoControllerTest {
     }
 
     @Test
+    void testListarProductosVacio() throws Exception {
+        Mockito.when(productoService.listar()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/v2/productos/all"))
+            .andExpect(status().isOk())
+            .andExpect(content().json("[]"));
+    }
+
+
+    @Test
     void testCrearProducto() throws Exception {
         Producto producto = new Producto();
         producto.setNombre("Perfume");
@@ -99,7 +109,7 @@ class ProductoControllerTest {
             .andExpect(status().isNoContent());
     }
 
-    @Test
+   @Test
     void testRebajarStock() throws Exception {
         Producto producto = new Producto();
         producto.setId(1L);
@@ -107,12 +117,15 @@ class ProductoControllerTest {
 
         Mockito.when(productoService.rebajarStock(eq(1L), eq(2))).thenReturn(producto);
 
+        Map<String, Integer> payload = Map.of("cantidad", 2);
+
         mockMvc.perform(patch("/api/v2/productos/rebajarStock/1")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"cantidad\":2}"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.mensaje", is("Stock actualizado correctamente")));
     }
+
 
     @Test
     void testObtenerStockTotal() throws Exception {
@@ -124,6 +137,16 @@ class ProductoControllerTest {
     }
 
     @Test
+    void testObtenerStockTotalCero() throws Exception {
+        Mockito.when(productoService.obtenerStockTotal()).thenReturn(0);
+
+        mockMvc.perform(get("/api/v2/productos/stock/total"))
+            .andExpect(status().isOk())
+            .andExpect(content().string("0"));
+    }
+
+
+    @Test
     void testObtenerResumenInventario() throws Exception {
         Mockito.when(productoService.obtenerResumenInventario())
                .thenReturn(Map.of("totalProductos", 10, "stockTotal", 50));
@@ -133,4 +156,14 @@ class ProductoControllerTest {
             .andExpect(jsonPath("$.totalProductos", is(10)))
             .andExpect(jsonPath("$.stockTotal", is(50)));
     }
+
+    @Test
+    void testObtenerResumenVacio() throws Exception {
+        Mockito.when(productoService.obtenerResumenInventario()).thenReturn(Collections.emptyMap());
+
+        mockMvc.perform(get("/api/v2/productos/reporte/resumen"))
+            .andExpect(status().isOk())
+            .andExpect(content().json("{}"));
+    }
+
 }
