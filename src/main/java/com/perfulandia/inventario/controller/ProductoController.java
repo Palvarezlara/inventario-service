@@ -3,18 +3,26 @@ package com.perfulandia.inventario.controller;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.EntityModel;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-
-import com.perfulandia.inventario.dto.ProductoModel;
 import com.perfulandia.inventario.assemblers.ProductoModelAssembler;
+import com.perfulandia.inventario.dto.ProductoModel;
 import com.perfulandia.inventario.model.Producto;
 import com.perfulandia.inventario.service.ProductoService;
 
@@ -26,6 +34,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 
 /*Controller se maneja el CRUD, esta con respuestas http */
@@ -71,17 +80,20 @@ public class ProductoController {
         description = "Objeto Producto a crear",
         required = true,
         content = @Content(schema = @Schema(implementation = Producto.class))
-    )
-  )
+    ))  
   @ApiResponses(value = {
     @ApiResponse(responseCode = "201", description = "Producto creado correctamente",
       content = @Content(mediaType = "application/json", 
                           schema = @Schema(implementation = Producto.class))),
     @ApiResponse(responseCode = "400", description = "Solicitud incorrecta, datos inválidos")
   })
-  public ResponseEntity<Producto> guardarProducto(@Valid @RequestBody Producto producto) {
+  public ResponseEntity<ProductoModel> guardarProducto(@Valid @RequestBody Producto producto) {
     Producto guardado = productoService.guardar(producto);
-    return ResponseEntity.status(201).body(guardado); // 201 Created
+    ProductoModel model = assembler.toModel(guardado);
+
+    return ResponseEntity
+            .created(linkTo(methodOn(ProductoController.class).obtenerProductoPorId(guardado.getId())).toUri())
+            .body(model); // Link al producto recién creado
 }
 
   @PutMapping("/{id}")
@@ -90,8 +102,7 @@ public class ProductoController {
         description = "Datos actualizados del producto",
         required = true,
         content = @Content(schema = @Schema(implementation = Producto.class))
-    )
-  )
+    ))
   @ApiResponses(value = {
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente",
       content = @Content(mediaType = "application/json", 
@@ -99,7 +110,7 @@ public class ProductoController {
     @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
     @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
   })
-  public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, 
+  public ResponseEntity<ProductoModel> actualizarProducto(@PathVariable Long id, 
     @RequestBody @Valid Producto productoActualizado) {
     try {
         Producto existente = productoService.buscarPorId(id);
@@ -108,7 +119,7 @@ public class ProductoController {
             existente.setPrecio(productoActualizado.getPrecio());
             existente.setStock(productoActualizado.getStock());
             Producto actualizado = productoService.guardar(existente);
-            return ResponseEntity.ok(actualizado); // 200 OK
+            return ResponseEntity.ok(assembler.toModel(actualizado)); // 
         } else {
             return ResponseEntity.notFound().build(); //404 Not Found
         }
@@ -147,6 +158,7 @@ public class ProductoController {
   })
   public ResponseEntity<?> eliminarProducto(@PathVariable Long id) {
     Producto producto = productoService.buscarPorId(id);
+    
     if (producto != null) {
         productoService.eliminar(id);
         return ResponseEntity.noContent().build();// 204 sin contenido
@@ -180,10 +192,13 @@ public class ProductoController {
     try {
         int cantidad = body.get("cantidad");
         Producto actualizado = productoService.rebajarStock(id, cantidad);
-        return ResponseEntity.ok(Map.of(
+        ProductoModel productoModel = assembler.toModel(actualizado);
+
+        return ResponseEntity.ok(EntityModel.of(Map.of(
             "mensaje", "Stock actualizado correctamente",
-            "producto", actualizado
-        )); // 200 OK
+            "producto", productoModel
+        )
+        )); // 200 con links
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(Map.of("error", e.getMessage())); // 400 Bad Request
     }
@@ -196,7 +211,7 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Stock repuesto correctamente"),
     @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
   })
-  public ResponseEntity<String> reponerStock(
+  public ResponseEntity<?> reponerStock(
         @Parameter(description = "ID del producto a reponer", required = true)
         @PathVariable Long id,
         @Parameter(description = "Cantidad a reponer", required = true, content= @Content(
@@ -206,7 +221,11 @@ public class ProductoController {
 
     try {
         productoService.reponerStock(id, cantidad);
-        return ResponseEntity.ok("Stock repuesto correctamente."); // 200 OK
+        Producto actualizado = productoService.buscarPorId(id);// Busqueda para mostrar el producto acutalizado
+        ProductoModel model = assembler.toModel(actualizado);
+      
+        return ResponseEntity.ok(
+          Map.of("Mensaje", "Stock repuesto correctamente.", "Producto", model)); // 200 OK
     } catch (RuntimeException e) {
         return ResponseEntity.badRequest().body(e.getMessage()); // 400 Bad Request
     }
@@ -221,10 +240,15 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Productos encontrados"),
     @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
   })
-  public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
+  public ResponseEntity<List<ProductoModel>> buscarPorNombre(@RequestParam String nombre) {
     try  {
       List<Producto> productos = productoService.buscarPorNombre(nombre);
-      return ResponseEntity.ok(productos); // 200 OK
+
+      //Transformar cada producto a su versión HATEOAS
+      List<ProductoModel> modelos = productos.stream()
+          .map(assembler::toModel)
+          .toList();
+      return ResponseEntity.ok(modelos); // 200 OK
       
     } catch (Exception e) {
         return ResponseEntity.badRequest().body(null); // 400 Bad Request
@@ -238,9 +262,12 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Productos con stock bajo obtenidos correctamente"),
     @ApiResponse(responseCode = "404", description = "No se encontraron productos con stock bajo")
   })
-  public ResponseEntity<List<Producto>> obtenerProductosConStockBajo(@PathVariable int cantidad) {
+  public ResponseEntity<List<ProductoModel>> obtenerProductosConStockBajo(@PathVariable int cantidad) {
     List<Producto> productos = productoService.listarStockBajo(cantidad);
-    return ResponseEntity.ok(productos); // 200 OK
+    List<ProductoModel> modelos = productos.stream()
+        .map(assembler::toModel)
+        .toList();
+    return ResponseEntity.ok(modelos); // 200 OK
 }
   
   /*EndPoint para mostrar productos cuyo precio sea menor a cierta cantidad */
@@ -250,10 +277,13 @@ public class ProductoController {
     @ApiResponse(responseCode = "200", description = "Productos con precio menor a obtenidos correctamente"),
     @ApiResponse(responseCode = "404", description = "No se encontraron productos con precio menor a")
   })
-  public ResponseEntity<List<Producto>> obtenerProductosPorPrecioMenor(@PathVariable double precio) {
+  public ResponseEntity<List<ProductoModel>> obtenerProductosPorPrecioMenor(@PathVariable double precio) {
     try {
       List<Producto> productos = productoService.listarPorPrecioMenorA(precio);
-      return ResponseEntity.ok(productos); // 200 OK
+      List<ProductoModel> modelos = productos.stream()
+          .map(assembler::toModel)
+          .toList();
+      return ResponseEntity.ok(modelos); // 200 OK
     } catch (Exception e) {
       return ResponseEntity.badRequest().body(null); // 400 Bad Request
     }
@@ -268,9 +298,12 @@ public class ProductoController {
         schema = @Schema(implementation = Producto.class))),
     @ApiResponse(responseCode = "404", description = "No se encontraron productos sin stock")
   })
-  public ResponseEntity<List<Producto>> obtenerProductosSinStock() {
+  public ResponseEntity<List<ProductoModel>> obtenerProductosSinStock() {
     List<Producto> productosSinStock = productoService.listarStockBajo(1);
-    return ResponseEntity.ok(productosSinStock); // 200 OK
+    List<ProductoModel> modelos = productosSinStock.stream()
+        .map(assembler::toModel)
+        .toList();
+    return ResponseEntity.ok(modelos); // 200 OK
   }
   
   /*EndPoint que devuelve los productos con stock */
@@ -282,9 +315,12 @@ public class ProductoController {
         schema = @Schema(implementation = Producto.class))),
     @ApiResponse(responseCode = "404", description = "No se encontraron productos con stock")
   })
-  public ResponseEntity<List<Producto>> obtenerProductosConStock() {
+  public ResponseEntity<List<ProductoModel>> obtenerProductosConStock() {
     List<Producto> productosConStock = productoService.listarConStock();
-    return ResponseEntity.ok(productosConStock); // 200 OK
+    List<ProductoModel> modelos = productosConStock.stream()
+        .map(assembler::toModel)
+        .toList();
+    return ResponseEntity.ok(modelos); // 200 OK
 }
 
 /*---------Endpoint Reportes----------- */
