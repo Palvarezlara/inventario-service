@@ -26,3 +26,5 @@ ENTRYPOINT ["java", "-jar", "app.jar","--spring.profiles.active=dev"]
 # Instrucciones para construir y ejecutar el contenedor
 #docker build -t mi-app .
 #docker run -p 8080:8080 mi-app
+# Para acceder a la aplicación, abre tu navegador y ve a http://localhost:8080/doc/swagger-ui.html
+#docker build --no-cache -t inventario-app . esto evita que Docker reutilice capas viejas con el .jar

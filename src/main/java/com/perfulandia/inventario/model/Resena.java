@@ -1,5 +1,6 @@
 package com.perfulandia.inventario.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,6 +23,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class Resena {
+
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,6 +37,7 @@ public class Resena {
     @Max(5)
     private int calificacion;
 
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto", nullable = false)
     private Producto producto;

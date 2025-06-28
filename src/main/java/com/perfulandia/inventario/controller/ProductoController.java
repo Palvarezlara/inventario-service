@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +79,18 @@ public class ProductoController {
     requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "Objeto Producto a crear",
         required = true,
-        content = @Content(schema = @Schema(implementation = Producto.class))
-    ))  
+        content = @Content(
+        mediaType = "application/json",
+        examples = @ExampleObject(
+            value = """
+            {
+              "nombre": "String",
+              "stock": 0,
+              "precio": 0
+            }
+            """
+        )
+    )))  
   @ApiResponses(value = {
     @ApiResponse(responseCode = "201", description = "Producto creado correctamente",
       content = @Content(mediaType = "application/json", 

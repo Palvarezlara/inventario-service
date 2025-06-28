@@ -32,6 +32,7 @@ class ResenaServiceTest {
     private Resena resenaEjemplo;
 
     @BeforeEach
+    
     void setUp() {
         MockitoAnnotations.openMocks(this);
 

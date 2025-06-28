@@ -1,14 +1,11 @@
 package com.perfulandia.inventario.model;
 
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +18,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class Producto {
+
+   @Schema(accessMode = Schema.AccessMode.READ_ONLY)
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
@@ -34,6 +33,5 @@ public class Producto {
    @Column(nullable = false)
    private double precio;
 
-   @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-   private List<Resena> resenas;
+   
 }
