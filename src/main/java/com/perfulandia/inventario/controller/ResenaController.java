@@ -2,6 +2,7 @@ package com.perfulandia.inventario.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import com.perfulandia.inventario.assemblers.ResenaModelAssembler;
+import com.perfulandia.inventario.assemblers.ResenaModelAssembler;
+import com.perfulandia.inventario.dto.ResenaModel;  
 
 import com.perfulandia.inventario.model.Resena;
 import com.perfulandia.inventario.service.ResenaService;
@@ -33,6 +42,8 @@ public class ResenaController {
     @Autowired // Autowired es una anotación de Spring que permite inyectar dependencias automáticamente.
     private ResenaService resenaService; // Instancia del servicio de reseñas   
 
+    @Autowired
+    private ResenaModelAssembler assembler;
 
     //--------------------ENDPOINTS CRUD----------------------------//
     @PostMapping("/crear")
@@ -49,10 +60,13 @@ public class ResenaController {
             content = @Content(schema = @Schema(implementation = Resena.class)) ),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida")
     })
-    public ResponseEntity<Resena> guardarResena(@Valid @RequestBody Resena resena) {
+    public ResponseEntity<ResenaModel> guardarResena(@Valid @RequestBody Resena resena) {
         
         Resena resenaGuardada = resenaService.guardar(resena);
-        return ResponseEntity.status(201).body(resenaGuardada); // Retorna 201 Created con la reseña guardada
+        ResenaModel resenaModel = assembler.toModel(resenaGuardada); // Utiliza el ensamblador para convertir Resena a ResenaModel
+        return ResponseEntity.created(linkTo(methodOn(ResenaController.class)
+                .obtenerResenaPorId(resenaGuardada.getId())).toUri())
+                .body(resenaModel); // Retorna 201 Created con la reseña creada
     }
 
     // Listar todas las reseñas
@@ -64,10 +78,15 @@ public class ResenaController {
             content = @Content(schema = @Schema(implementation = Resena.class))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida")
     })
-    public ResponseEntity<List<Resena>> listarResenas() {
+    public ResponseEntity<CollectionModel<ResenaModel>> listarResenas() {
         try {
             List<Resena> resenas = resenaService.listar();
-            return ResponseEntity.ok(resenas); // Retorna 200 OK con la lista de reseñas
+            List<ResenaModel> resenasModel = resenas.stream()
+                .map(assembler::toModel) // Utiliza el ensamblador para convertir Resena a ResenaModel
+                .toList(); // Convierte la lista de Resena a ResenaModel usando el ensamblador
+            return ResponseEntity.ok(CollectionModel.of(resenasModel, 
+            linkTo(methodOn(ResenaController.class)
+            .listarResenas()).withSelfRel())); // Retorna 200 OK con la lista de reseñas
         } catch (Exception e) {
             return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request en caso de error
         }
@@ -75,10 +94,28 @@ public class ResenaController {
 
     //Buscar una reseña por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Resena> obtenerResenaPorId(@PathVariable Long id) {
-        return resenaService.buscarPorId(id)
-                .map(ResponseEntity::ok) // Si se encuentra la reseña, retorna 200 OK con la reseña
-                .orElse(ResponseEntity.notFound().build()); // Si no se encuentra, retorna 404 Not Found
+    @Operation(summary = "Obtener una reseña por ID", 
+            description = "Permite obtener los detalles de una reseña específica por su ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Reseña encontrada exitosamente",
+            content = @Content(schema = @Schema(implementation = Resena.class))),
+        @ApiResponse(responseCode = "404", description = "Reseña no encontrada"),
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida")})
+        
+    public ResponseEntity<ResenaModel> obtenerResenaPorId(@PathVariable Long id) {
+      try{
+        Optional<Resena> resenaOptional = resenaService.buscarPorId(id);
+        if (resenaOptional.isPresent()) {
+            Resena resena = resenaOptional.get();
+            return ResponseEntity.ok(assembler.toModel(resena)); // Retorna 200 OK con la reseña encontrada
+        } else{
+            return ResponseEntity.notFound().build(); // Retorna 404 Not Found si no se encuentra la reseña
+        }       
+      } catch (Exception e) {
+            return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request en caso de error
+        }  
+
+        
     }
 
     // Listar reseñas por usuario ID
@@ -90,10 +127,13 @@ public class ResenaController {
             content = @Content(schema = @Schema(implementation = Resena.class))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida")
     })
-    public ResponseEntity<List<Resena>> listarPorUsuario(@PathVariable Long idUsuario) {
+    public ResponseEntity<List<ResenaModel>> listarPorUsuario(@PathVariable Long idUsuario) {
         try{
             List<Resena> resenas = resenaService.listarPorUsuarioId(idUsuario);
-            return ResponseEntity.ok(resenas); // Retorna 200 OK con la lista de reseñas del usuario
+            List<ResenaModel> resenasModel = resenas.stream()
+                .map(assembler::toModel) 
+                .toList(); 
+            return ResponseEntity.ok(resenasModel); // Retorna 200 OK con la lista de reseñas del usuario
         } catch (Exception e) {
             return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request en caso de error
         }
@@ -115,7 +155,7 @@ public class ResenaController {
         @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
         @ApiResponse(responseCode = "404", description = "Reseña no encontrada")
     })
-    public ResponseEntity<Resena> actualizarResena(@PathVariable Long id, @Valid @RequestBody Resena resenaActualizada) {
+    public ResponseEntity<ResenaModel> actualizarResena(@PathVariable Long id, @Valid @RequestBody Resena resenaActualizada) {
         try {
             if (!id.equals(resenaActualizada.getId())) {
                 return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request si el ID no coincide
@@ -124,7 +164,8 @@ public class ResenaController {
                 resenaExistente.setComentario(resenaActualizada.getComentario());
                 resenaExistente.setCalificacion(resenaActualizada.getCalificacion());
                 resenaExistente.setNombreUsuario(resenaActualizada.getNombreUsuario());
-                return ResponseEntity.ok(resenaService.actualizar(resenaExistente)); // Retorna 200 OK con la reseña actualizada
+                Resena actualizada = resenaService.actualizar(resenaExistente);
+                return ResponseEntity.ok(assembler.toModel(actualizada)); // Retorna 200 OK con la reseña actualizada
             }).orElse(ResponseEntity.notFound().build()); // Si no se encuentra la reseña, retorna 404 Not Found
         
         } catch (Exception e) {
@@ -158,12 +199,15 @@ public class ResenaController {
             content = @Content(schema = @Schema(implementation = Resena.class))),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
-    public ResponseEntity<List<Resena>> listarPorProducto(@PathVariable Long idProducto) {
+    public ResponseEntity<List<ResenaModel>> listarPorProducto(@PathVariable Long idProducto) {
         try {
             List<Resena> resenas = resenaService.listarPorProductoId(idProducto);
-            return ResponseEntity.ok(resenas); // Retorna 200 OK con la lista de reseñas del producto
+            List<ResenaModel> resenasModel = resenas.stream()
+                .map(assembler::toModel) 
+                .toList();
+            return ResponseEntity.ok(resenasModel); // Retorna 200 OK 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build(); // Retorna 400 Bad Request en caso de error
+            return ResponseEntity.badRequest().build(); // Retorna 400 
         }
     }
 

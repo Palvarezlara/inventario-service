@@ -66,7 +66,8 @@ public class ProductoController {
             .map(assembler::toModel)
             .toList();
         return ResponseEntity.ok(CollectionModel.of(modelos, 
-        linkTo(methodOn(ProductoController.class).listarProductos()).withSelfRel()
+        linkTo(methodOn(ProductoController.class)
+        .listarProductos()).withSelfRel()
         )
       ); // 200 OK
     } catch (Exception e) {
