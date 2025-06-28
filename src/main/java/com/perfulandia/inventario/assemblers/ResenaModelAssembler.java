@@ -1,13 +1,13 @@
 package com.perfulandia.inventario.assemblers;
 
-import com.perfulandia.inventario.model.Resena;
-import com.perfulandia.inventario.controller.ResenaController;
-import com.perfulandia.inventario.dto.ResenaModel;
-
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import org.springframework.stereotype.Component;
+
+import com.perfulandia.inventario.controller.ResenaController;
+import com.perfulandia.inventario.dto.ResenaModel;
+import com.perfulandia.inventario.model.Resena;
 
 
 @Component
@@ -20,7 +20,7 @@ public class ResenaModelAssembler implements RepresentationModelAssembler<Resena
         model.setId(resena.getId());
         model.setComentario(resena.getComentario());
         model.setCalificacion(resena.getCalificacion());
-        model.setIdProducto(resena.getIdProducto());
+        model.setIdProducto(resena.getProducto().getId());
         model.setIdUsuario(resena.getIdUsuario());
         model.setNombreUsuario(resena.getNombreUsuario());
 

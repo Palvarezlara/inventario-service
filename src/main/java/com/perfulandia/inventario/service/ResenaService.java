@@ -1,10 +1,15 @@
 package com.perfulandia.inventario.service;
 
-import org.springframework.stereotype.Service;
-import com.perfulandia.inventario.repository.ResenaRepository;
-import com.perfulandia.inventario.model.Resena;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import java.util.*;
+import org.springframework.stereotype.Service;
+
+import com.perfulandia.inventario.model.Resena;
+import com.perfulandia.inventario.repository.ResenaRepository;
 
 
 @Service
@@ -27,7 +32,7 @@ public class ResenaService {
     }
 
     public List<Resena> listarPorProductoId(Long idProducto) {
-    return resenaRepository.findByIdProducto(idProducto);
+    return resenaRepository.findByProductoId(idProducto);
     }
 
     public List<Resena> listarPorUsuarioId(Long usuarioId) {

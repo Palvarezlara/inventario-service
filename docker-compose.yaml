@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_DATABASE: db_users_vm
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 12345
+    ports:
+      - "3307:3306"  # Usa 3307 si el 3306 ya está ocupado en tu host
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - springnet
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"  # Usa 8081 si el 8080 ya está ocupado en tu host
+    environment:
+      DB_USER: user
+      DB_PASS: 12345
+    depends_on:
+      - mysql
+    networks:
+      - springnet
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  springnet:

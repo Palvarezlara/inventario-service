@@ -1,6 +1,14 @@
 package com.perfulandia.inventario.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -26,8 +34,9 @@ public class Resena {
     @Max(5)
     private int calificacion;
 
-    @Column(name = "id_producto", nullable = false)
-    private Long idProducto;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_producto", nullable = false)
+    private Producto producto;
 
     @Column(name = "id_usuario", nullable = false)
     private Long idUsuario;

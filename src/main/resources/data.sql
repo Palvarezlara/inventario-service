@@ -21,7 +21,7 @@ INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_us
 VALUES ('Muy buen aroma', 5, 1, 101, 'Ana Lopez');
 
 INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_usuario)
-VALUES ('Me encanto', 4, 1, 102, 'Luis Garcia');
+VALUES ('Me encanto', 4, 12, 102, 'Luis Garcia');
 
 INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_usuario)
 VALUES ('No me duro mucho', 3, 2, 103, 'Marta Soto');
@@ -30,6 +30,6 @@ INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_us
 VALUES ('Perfecto para el dia', 5, 3, 104, 'Carlos Ruiz');
 
 INSERT INTO resena (comentario, calificacion, id_producto, id_usuario, nombre_usuario)
-VALUES ('Un poco fuerte', 2, 2, 105, 'Paula Diaz');
+VALUES ('Un poco fuerte', 2, 6, 105, 'Paula Diaz');
 
 

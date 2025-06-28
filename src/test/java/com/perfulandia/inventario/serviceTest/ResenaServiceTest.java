@@ -1,20 +1,24 @@
 package com.perfulandia.inventario.serviceTest;
 
-import com.perfulandia.inventario.model.Resena;
-import com.perfulandia.inventario.repository.ResenaRepository;
-import com.perfulandia.inventario.service.ResenaService;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import com.perfulandia.inventario.model.Producto;
+import com.perfulandia.inventario.model.Resena;
+import com.perfulandia.inventario.repository.ResenaRepository;
+import com.perfulandia.inventario.service.ResenaService;
 
 
 class ResenaServiceTest {
@@ -31,11 +35,14 @@ class ResenaServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
+        Producto producto = new Producto();
+        producto.setId(10L); // ID simulado del producto
+
         resenaEjemplo = new Resena();
         resenaEjemplo.setId(1L);
         resenaEjemplo.setComentario("Muy bueno");
         resenaEjemplo.setCalificacion(5);
-        resenaEjemplo.setIdProducto(10L);
+        resenaEjemplo.setProducto(producto);
         resenaEjemplo.setIdUsuario(100L);
         resenaEjemplo.setNombreUsuario("Juan");
     }
@@ -62,12 +69,12 @@ class ResenaServiceTest {
 
     @Test
     void testListarPorProductoId() {
-        when(repository.findByIdProducto(10L)).thenReturn(List.of(resenaEjemplo));
+        when(repository.findByProductoId(10L)).thenReturn(List.of(resenaEjemplo));
 
         List<Resena> resultado = service.listarPorProductoId(10L);
 
         assertEquals(1, resultado.size());
-        verify(repository).findByIdProducto(10L);
+        verify(repository).findByProductoId(10L);
     }
 
     @Test
