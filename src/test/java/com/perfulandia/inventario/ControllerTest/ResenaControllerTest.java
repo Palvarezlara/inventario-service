@@ -1,23 +1,33 @@
 package com.perfulandia.inventario.ControllerTest;
 
-import com.perfulandia.inventario.controller.ResenaController;
-import com.perfulandia.inventario.model.Resena;
-import com.perfulandia.inventario.service.ResenaService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.*;
-
-import static org.mockito.ArgumentMatchers.*;
-import org.springframework.context.annotation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.perfulandia.inventario.assemblers.ResenaModelAssembler;
+import com.perfulandia.inventario.controller.ResenaController;
+import com.perfulandia.inventario.model.Resena;
+import com.perfulandia.inventario.service.ResenaService;
 
 @WebMvcTest(controllers = ResenaController.class)
 @Import(ResenaControllerTest.MockConfig.class)
@@ -36,11 +46,17 @@ public class ResenaControllerTest {
         public ResenaService resenaService() {
             return Mockito.mock(ResenaService.class);
         }
+        @Bean
+        public ResenaModelAssembler resenaModelAssembler() {
+            return new ResenaModelAssembler();
+        }
     }
+
 
     @Test
     void testGuardarResena() throws Exception {
         Resena resena = new Resena();
+        resena.setId(1L);
         resena.setComentario("Muy bueno");
         resena.setCalificacion(5);
 
@@ -50,7 +66,8 @@ public class ResenaControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(resena)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.comentario").value("Muy bueno"));
+                .andExpect(jsonPath("$.comentario").value("Muy bueno"))
+                .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test
@@ -61,7 +78,8 @@ public class ResenaControllerTest {
 
         mockMvc.perform(get("/api/v2/resenas/all"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$._embedded.resenaModelList.length()").value(2));
+
     }
 
     @Test

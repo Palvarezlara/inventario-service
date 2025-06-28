@@ -4,6 +4,7 @@ package com.perfulandia.inventario.ControllerTest;
 import com.perfulandia.inventario.controller.ProductoController;
 import com.perfulandia.inventario.model.Producto;
 import com.perfulandia.inventario.service.ProductoService;
+import com.perfulandia.inventario.assemblers.ProductoModelAssembler;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,6 +42,11 @@ class ProductoControllerTest {
         public ProductoService productoService() {
             return Mockito.mock(ProductoService.class);
         }
+
+        @Bean
+        public ProductoModelAssembler productoModelAssembler() {
+            return new ProductoModelAssembler();
+        }
     }
 
     @Test
@@ -54,8 +60,9 @@ class ProductoControllerTest {
 
         mockMvc.perform(get("/api/v2/productos/all"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.size()", is(1)))
-            .andExpect(jsonPath("$[0].nombre", is("Perfume")));
+            .andExpect(jsonPath("$._embedded.productoModelList[0].nombre").value("Perfume"))
+            .andExpect(jsonPath("$._embedded.productoModelList.length()").value(1))
+            .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test
@@ -64,13 +71,15 @@ class ProductoControllerTest {
 
         mockMvc.perform(get("/api/v2/productos/all"))
             .andExpect(status().isOk())
-            .andExpect(content().json("[]"));
+            .andExpect(jsonPath("$._embedded").doesNotExist());
+
     }
 
 
     @Test
     void testCrearProducto() throws Exception {
         Producto producto = new Producto();
+        producto.setId(1L);
         producto.setNombre("Perfume");
         producto.setStock(10);
         producto.setPrecio(5000.0);
@@ -81,7 +90,8 @@ class ProductoControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(producto)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.nombre", is("Perfume")));
+            .andExpect(jsonPath("$.nombre", is("Perfume")))
+            .andExpect(jsonPath("$._links.self.href").exists());
     }
 
     @Test

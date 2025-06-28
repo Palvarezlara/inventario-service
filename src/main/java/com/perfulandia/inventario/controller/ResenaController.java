@@ -15,12 +15,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import com.perfulandia.inventario.assemblers.ResenaModelAssembler;
-import com.perfulandia.inventario.assemblers.ResenaModelAssembler;
+
 import com.perfulandia.inventario.dto.ResenaModel;  
 
 import com.perfulandia.inventario.model.Resena;
